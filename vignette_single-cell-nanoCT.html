@@ -358,7 +358,7 @@ display: none;
 Analysis Tutorial</h1>
 <h4 class="author">Federico Ansaloni</h4>
 <address class="author_afil">
-Karolinska Institutet<br><h4 class="date">Compiled: March 11, 2023</h4>
+Karolinska Institutet<br><h4 class="date">Compiled: March 12, 2023</h4>
 
 </div>
 
@@ -379,7 +379,7 @@ sample):<br />
         2. <code>metadata.csv</code><br />
         3. <code>peaks.broadPeak</code><br />
 </p>
-<p>You can find a toy example (2 samples, 3 modalities) <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">here</a></p>
+<p>You can find a toy example (2 samples, 3 modalities) <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">here</a>.</p>
 <p>The downstream analysis is composed by 5 steps:<br />
 </p>
 <p>        <strong>1. Data loading (peaks, metadata and
@@ -413,20 +413,46 @@ this case [2 samples * 3 modalities]).</li>
 <h3>Setting some initial variables</h3>
 <p>First, define some variables that will be used across the entire
 vignette. Modify them according to your data.<br />
-<strong>Extremely important is that you set as <code>wd</code> the
-directory where the Github repo was previously downloaded. This is
-required in order to upload all the custom functions needed to run this
-vignette.</strong></p>
+</p>
+<p><strong>Extremely important:</strong></p>
+<ol style="list-style-type: decimal">
+<li>set as <code>repodir</code> the directory where the Github repo was
+previously downloaded. This is required in order to upload all the
+custom functions needed to run this vignette<br />
+</li>
+</ol>
 <pre class="r"><code># directory where the single-cell-nano-cut-tag repo was cloned
-wd &lt;- &quot;/Users/federico/Dropbox/KI/marek/repo/&quot; # change accordingly
-source(paste0(wd,&quot;single-cell-nano-cut-tag/scripts/functions_scCT.R&quot;))
-# Set the used genome version
+repodir &lt;- &quot;~/Documents/GitHub/&quot; # change accordingly
+source(paste0(repodir,&quot;single-cell-nano-cut-tag/scripts/functions_scCT.R&quot;))</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>set as <code>wd</code> the <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">Preprocessing</a>
+output root directory.<br />
+This vignette indeed expects that the preprocessing has already ben run
+following <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">our
+documentation</a>, and that <code>wd</code> is formatted as
+follow:<br />
+        - <code>fragments.tsv.gz</code> is expected to be in a folder
+with this path:
+<code>wd/{sample}/{modality_barcode}/fragments/</code><br />
+        - <code>metadata.csv</code> is expected to be in a folder with
+this path: <code>wd/{sample}/{modality_barcode}/cell_picking/</code> 
+        -<code>{modality}_peaks.broadPeak</code> is expected to be in a
+folder with this path:
+<code>wd/{sample}/{modality_barcode}/peaks/macs_broad/</code> </li>
+</ol>
+<pre class="r"><code># directory where the single-cell-nano-cut-tag output files are stored
+wd &lt;- &quot;~/Dropbox/KI/marek/single-cell-nano-cut-tag_toy_data/input_files/&quot;
+setwd(wd)</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>set other variables (genome version, assay type, etc)</li>
+</ol>
+<pre class="r"><code># Set the used genome version
 genome &lt;- &quot;mm10&quot;
 # Assay (peaks or bins)
 assay &lt;- &quot;peaks&quot;
 # Samples
 samples &lt;- c(&quot;bcdCT_MB21_02&quot;,&quot;bcdCT_MB21_04&quot;)
-# Modalities
+# Modalities, this MUST match the directory namesl
 modalities &lt;- c(&quot;ATAC_TATAGCCT&quot;,&quot;H3K27ac_ATAGAGGC&quot;,&quot;H3K27me3_CCTATCCT&quot;)
 # Minimum number of cells a feature must be detected in to be included in the Seurat obj
 min_cell &lt;- 1
@@ -444,14 +470,14 @@ for (smpl in samples) {
   cat(&quot;Loading peaks for sample&quot;,smpl,&quot;\n&quot;)
   for (mod in modalities) {
     cat(&quot;\t&quot;,mod,&quot;\n&quot;)
-    
+
     # get mod name withouth barcode
     mod2 &lt;- strsplit(mod,&quot;_&quot;)[[1]][1]
-    
+
     # Load peak files
     input.ls[[paste0(mod,&quot;_&quot;,smpl)]] &lt;- read.table(paste0(smpl,&quot;/&quot;,mod,&quot;/peaks/macs_broad/&quot;,mod2,&quot;_peaks.broadPeak&quot;))[1:3]
     colnames(input.ls[[paste0(mod,&quot;_&quot;,smpl)]] ) &lt;- c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;)
-    
+
   }
 }</code></pre>
 <pre><code>## Loading peaks for sample bcdCT_MB21_02 
@@ -477,7 +503,7 @@ convert them into genomic ranges and create a common set of peaks in
 each sample by using GenomicRanges::reduce function and filter out peaks
 shorter than 20nt and longer than 10kb.</p>
 <p>First, convert peaks to genomic ranges</p>
-<pre class="r"><code>input.ls &lt;- lapply(input.ls,function(x){ makeGRangesFromDataFrame(x) }) </code></pre>
+<pre class="r"><code>input.ls &lt;- lapply(input.ls,function(x){ makeGRangesFromDataFrame(x) })</code></pre>
 <p>(<em>We are going to frequently use the <code>lapply</code> function.
 <code>lapply</code> applies a given R function to all the items (x) of a
 given list</em>)</p>
@@ -530,12 +556,12 @@ for (smpl in samples) {
   cat(&quot;Loading peaks for sample&quot;,smpl,&quot;\n&quot;)
   for (mod in modalities) {
     cat(&quot;\t&quot;,mod,&quot;\n&quot;)
-    
+
     # Load metadata
     metadata.ls[[paste0(mod,&quot;_&quot;,smpl)]] &lt;- read.csv(paste0(smpl,&quot;/&quot;,mod,&quot;/cell_picking/metadata.csv&quot;),
                                                   stringsAsFactors = FALSE)
     rownames(metadata.ls[[paste0(mod,&quot;_&quot;,smpl)]]) &lt;- metadata.ls[[paste0(mod,&quot;_&quot;,smpl)]]$barcode
-    
+
  }
 }</code></pre>
 <pre><code>## Loading peaks for sample bcdCT_MB21_02 
@@ -568,12 +594,12 @@ for (smpl in samples) {
   cat(&quot;Loading peaks for sample&quot;,smpl,&quot;\n&quot;)
   for (mod in modalities) {
     cat(&quot;\t&quot;,mod,&quot;\n&quot;)
-    
+
     # Load fragments
     fragment.ls[[paste0(mod,&quot;_&quot;,smpl)]] &lt;- CreateFragmentObject(
                                               path = paste0(smpl,&quot;/&quot;,mod,&quot;/fragments/fragments.tsv.gz&quot;),
                                               cells = metadata.ls[[paste0(mod,&quot;_&quot;,smpl)]]$barcode)
-    
+
   }
 }</code></pre>
 <pre><code>## Loading peaks for sample bcdCT_MB21_02 
@@ -670,7 +696,7 @@ for (experim in names(fragment.ls)) {
                                         features = combined.peaks,                    # common set of peaks
                                         cells = metadata.ls[[experim]]$barcode,       # metadata
                                         process_n = 20000) # the higher, the faster, the more memory is used
-  
+
 }</code></pre>
 <pre class="r"><code>counts.ls[[paste0(&quot;ATAC_TATAGCCT_&quot;,samples[1])]][1:10,1:25]</code></pre>
 <pre><code>## 10 x 25 sparse Matrix of class &quot;dgCMatrix&quot;
@@ -698,28 +724,28 @@ experiments in a single Seurat object.</p>
 <pre class="r"><code>obj.ls &lt;- list()
 # Iterate among the experiment names in order to retrieve fragments and cell barcodes from the same experiment
 for (experim in names(counts.ls)) {
-  
+
   # Get sample and modality name from the experiment variable
   smpl &lt;- str_split_fixed(experim,&quot;_&quot;,2)[,2]
   modality &lt;- str_split_fixed(experim,&quot;_&quot;,2)[,1]
-  
+
   # Create the chromatin assay
-  chrom.assay &lt;- CreateChromatinAssay(counts = counts.ls[[experim]], 
-                                      fragments = fragment.ls[[experim]], 
-                                      genome = genome, 
-                                      min.cells = min_cell, 
+  chrom.assay &lt;- CreateChromatinAssay(counts = counts.ls[[experim]],
+                                      fragments = fragment.ls[[experim]],
+                                      genome = genome,
+                                      min.cells = min_cell,
                                       min.features = min_feat)
-  
+
   # Create the object
-  obj.ls[[experim]] &lt;- CreateSeuratObject(counts = chrom.assay, 
-                                          assay = assay, 
-                                          meta.data=metadata.ls[[experim]], 
+  obj.ls[[experim]] &lt;- CreateSeuratObject(counts = chrom.assay,
+                                          assay = assay,
+                                          meta.data=metadata.ls[[experim]],
                                           project = smpl)
-  
+
   # Add some metadata of origin
   obj.ls[[experim]]$dataset &lt;- experim
   obj.ls[[experim]]$modality &lt;- modality
-  
+
 }</code></pre>
 </div>
 </div>
@@ -746,19 +772,19 @@ QCs.</li>
 </ul>
 <pre class="r"><code>obj.ls.qc &lt;- list()
 for (experiment in names(obj.ls)) {
-  
+
   # Calculate 5th and 95th quantiles for logUMI
   logUMI_cutoff_high &lt;- quantile(obj.ls[[experiment]]$logUMI, 0.95)
   logUMI_cutoff_low  &lt;- quantile(obj.ls[[experiment]]$logUMI, 0.05)
   # Calculate 5th quantile for logUMI for % fragments in peaks (here indicated by peak_ratio_MB)
   peak_ratio_MB_cutoff_low  &lt;- quantile(obj.ls[[experiment]]$peak_ratio_MB, 0.05)
-  
+
   # Filter out cells outside these thresholds
   obj.ls.qc[[experiment]] &lt;- subset(obj.ls[[experiment]],
-                                    logUMI &gt; logUMI_cutoff_low &amp; 
+                                    logUMI &gt; logUMI_cutoff_low &amp;
                                       logUMI &lt; logUMI_cutoff_high &amp;
                                       peak_ratio_MB &gt; peak_ratio_MB_cutoff_low)
-  
+
   # print number of discarded cells
   old_n_cell &lt;- nrow(obj.ls[[experiment]][[]])
   new_n_cell &lt;- nrow(obj.ls.qc[[experiment]][[]])
@@ -801,12 +827,12 @@ modality.</li>
 <h3>Merge Seurat objects across different samples</h3>
 <pre class="r"><code>combined.obj.ls &lt;- list()
 for (mod in modalities) {
-  
+
   # merge objects among the different samples
   combined.obj.ls[[mod]] &lt;- merge(obj.ls.qc[[paste0(mod,&quot;_&quot;,samples[1])]],
                                   y = obj.ls.qc[[paste0(mod,&quot;_&quot;,samples[2])]],
                                   add.cell.ids = c(samples[1], samples[2]) )
-  
+
 }</code></pre>
 <pre class="r"><code>combined.obj.ls[[&quot;ATAC_TATAGCCT&quot;]][[&quot;peaks&quot;]]</code></pre>
 <pre><code>## ChromatinAssay data with 67729 features for 4769 cells
