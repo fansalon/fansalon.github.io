@@ -358,7 +358,7 @@ display: none;
 Analysis Tutorial</h1>
 <h4 class="author">Federico Ansaloni</h4>
 <address class="author_afil">
-Karolinska Institutet<br><h4 class="date">Compiled: March 12, 2023</h4>
+Karolinska Institutet<br><h4 class="date">Compiled: March 13, 2023</h4>
 
 </div>
 
@@ -416,21 +416,35 @@ vignette. Modify them according to your data.<br />
 </p>
 <p><strong>Extremely important:</strong></p>
 <ol style="list-style-type: decimal">
-<li>set as <code>repodir</code> the directory where the Github repo was
-previously downloaded. This is required in order to upload all the
-custom functions needed to run this vignette<br />
+<li>set as <code>repodir</code> the directory where the <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag/blob/main/README.md#clone-github-repository">Github
+repo</a> was previously downloaded. This is required in order to upload
+all the custom functions needed to run this vignette<br />
 </li>
 </ol>
 <pre class="r"><code># directory where the single-cell-nano-cut-tag repo was cloned
 repodir &lt;- &quot;~/Documents/GitHub/&quot; # change accordingly
 source(paste0(repodir,&quot;single-cell-nano-cut-tag/scripts/functions_scCT.R&quot;))</code></pre>
 <ol start="2" style="list-style-type: decimal">
-<li>set as <code>wd</code> the <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">Preprocessing</a>
-output root directory.<br />
-This vignette indeed expects that the preprocessing has already ben run
-following <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">our
-documentation</a>, and that <code>wd</code> is formatted as
-follow:<br />
+<li>set as <code>wd</code> the output root directory.<br />
+</li>
+</ol>
+<ul>
+<li>If you are following <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">our
+tutorial</a>, your <code>wd</code> will be
+<code>~/NatProt/single-cell-nano-cut-tag/results/multimodal_data</code><br />
+</li>
+<li>If you have skipped the tutorial and directly downloaded the toy
+data from <a href="https://zenodo.org/record/7719349#.ZA7Hey-B35g">zenodo</a>, your
+<code>wd</code> will be
+<code>/path/to/single-cell-nano-cut-tag_toy_data/input_files/</code><br />
+</li>
+<li>If you have run <a href="https://github.com/bartosovic-lab/single-cell-nano-cut-tag">our
+snakemake workflow</a> on your data, your <code>wd</code> will probably
+be
+<code>/path/to/single-cell-nano-cut-tag/results/multimodal_data</code><br />
+</li>
+<li>If you are running this vignette on your personal data please ensure
+that your <code>wd</code> is formatted as follow:<br />
         - <code>fragments.tsv.gz</code> is expected to be in a folder
 with this path:
 <code>wd/{sample}/{modality_barcode}/fragments/</code><br />
@@ -439,9 +453,9 @@ this path: <code>wd/{sample}/{modality_barcode}/cell_picking/</code> 
         -<code>{modality}_peaks.broadPeak</code> is expected to be in a
 folder with this path:
 <code>wd/{sample}/{modality_barcode}/peaks/macs_broad/</code> </li>
-</ol>
+</ul>
 <pre class="r"><code># directory where the single-cell-nano-cut-tag output files are stored
-wd &lt;- &quot;~/Dropbox/KI/marek/single-cell-nano-cut-tag_toy_data/input_files/&quot;
+wd &lt;- &quot;~/Dropbox/KI/marek/single-cell-nano-cut-tag_toy_data/input_files/&quot; # change accordingly
 setwd(wd)</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>set other variables (genome version, assay type, etc)</li>
